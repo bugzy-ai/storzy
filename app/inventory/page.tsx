@@ -27,6 +27,11 @@ export default function InventoryPage() {
   }, [])
 
   const handleAddToCart = (productId: number) => {
+    // Bug mode: silent failure - appears to work but doesn't add
+    if (process.env.NEXT_PUBLIC_ADD_TO_CART_BUG === 'true') {
+      return
+    }
+
     setCart((prev) => {
       const newCart = { ...prev, [productId]: (prev[productId] || 0) + 1 }
       localStorage.setItem("cart", JSON.stringify(newCart))

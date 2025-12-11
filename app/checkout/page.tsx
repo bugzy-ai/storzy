@@ -16,6 +16,10 @@ export default function CheckoutPage() {
   const [postalCode, setPostalCode] = useState("")
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [country, setCountry] = useState("")
+  const [shippingMethod, setShippingMethod] = useState("")
+
+  const isImprovedCheckout = process.env.NEXT_PUBLIC_IMPROVED_CHECKOUT === 'true'
 
   useEffect(() => {
     const user = localStorage.getItem("currentUser")
@@ -38,6 +42,11 @@ export default function CheckoutPage() {
     if (!firstName) newErrors.firstName = "First Name is required"
     if (!lastName) newErrors.lastName = "Last Name is required"
     if (!postalCode) newErrors.postalCode = "Postal Code is required"
+
+    if (isImprovedCheckout) {
+      if (!country) newErrors.country = "Country is required"
+      if (!shippingMethod) newErrors.shippingMethod = "Shipping method is required"
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -73,62 +82,178 @@ export default function CheckoutPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 bg-white rounded-lg p-8">
-            <form onSubmit={handleCheckout} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
+            {isImprovedCheckout ? (
+              <form onSubmit={handleCheckout} className="checkout-form-v2 flex flex-col gap-8">
+                <div className="checkout-fields-grid grid md:grid-cols-3 gap-6">
+                  <div className="field-v2">
+                    <label className="checkout-label block text-sm font-medium text-slate-900 mb-2">First Name</label>
+                    <Input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className={`checkout-input w-full border-2 ${errors.firstName ? "border-red-500" : "border-slate-200"}`}
+                      disabled={isLoading}
+                    />
+                    {errors.firstName && <p className="text-red-600 text-sm mt-1">{errors.firstName}</p>}
+                  </div>
+                  <div className="field-v2">
+                    <label className="checkout-label block text-sm font-medium text-slate-900 mb-2">Last Name</label>
+                    <Input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className={`checkout-input w-full border-2 ${errors.lastName ? "border-red-500" : "border-slate-200"}`}
+                      disabled={isLoading}
+                    />
+                    {errors.lastName && <p className="text-red-600 text-sm mt-1">{errors.lastName}</p>}
+                  </div>
+                  <div className="field-v2">
+                    <label className="checkout-label block text-sm font-medium text-slate-900 mb-2">Postal Code</label>
+                    <Input
+                      type="text"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      className={`checkout-input w-full border-2 ${errors.postalCode ? "border-red-500" : "border-slate-200"}`}
+                      disabled={isLoading}
+                    />
+                    {errors.postalCode && <p className="text-red-600 text-sm mt-1">{errors.postalCode}</p>}
+                  </div>
+                </div>
+
+                <div className="country-field-wrapper">
+                  <label className="checkout-label block text-sm font-medium text-slate-900 mb-2">Country</label>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className={`checkout-select w-full border-2 rounded px-4 py-2 ${errors.country ? "border-red-500" : "border-slate-200"}`}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Country</option>
+                    <option value="us">United States</option>
+                    <option value="ca">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="de">Germany</option>
+                    <option value="fr">France</option>
+                  </select>
+                  {errors.country && <p className="text-red-600 text-sm mt-1">{errors.country}</p>}
+                </div>
+
+                <div className="shipping-method-wrapper">
+                  <label className="checkout-label block text-sm font-medium text-slate-900 mb-2">Shipping Method</label>
+                  <div className="shipping-options space-y-2">
+                    <label className="shipping-option flex items-center gap-2 p-3 border rounded cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value="standard"
+                        checked={shippingMethod === 'standard'}
+                        onChange={(e) => setShippingMethod(e.target.value)}
+                        disabled={isLoading}
+                      />
+                      <span>Standard Shipping (5-7 days) - Free</span>
+                    </label>
+                    <label className="shipping-option flex items-center gap-2 p-3 border rounded cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value="express"
+                        checked={shippingMethod === 'express'}
+                        onChange={(e) => setShippingMethod(e.target.value)}
+                        disabled={isLoading}
+                      />
+                      <span>Express Shipping (2-3 days) - $9.99</span>
+                    </label>
+                    <label className="shipping-option flex items-center gap-2 p-3 border rounded cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value="overnight"
+                        checked={shippingMethod === 'overnight'}
+                        onChange={(e) => setShippingMethod(e.target.value)}
+                        disabled={isLoading}
+                      />
+                      <span>Overnight Shipping (1 day) - $19.99</span>
+                    </label>
+                  </div>
+                  {errors.shippingMethod && <p className="text-red-600 text-sm mt-1">{errors.shippingMethod}</p>}
+                </div>
+
+                <div className="checkout-actions flex flex-row-reverse gap-6 pt-8 border-t">
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Continue"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => (window.location.href = "/cart")}
+                    className="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-900 font-semibold"
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleCheckout} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">First Name</label>
+                    <Input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className={`w-full border-2 ${errors.firstName ? "border-red-500" : "border-slate-200"}`}
+                      disabled={isLoading}
+                    />
+                    {errors.firstName && <p className="text-red-600 text-sm mt-1">{errors.firstName}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Last Name</label>
+                    <Input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className={`w-full border-2 ${errors.lastName ? "border-red-500" : "border-slate-200"}`}
+                      disabled={isLoading}
+                    />
+                    {errors.lastName && <p className="text-red-600 text-sm mt-1">{errors.lastName}</p>}
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-slate-900 mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">Postal Code</label>
                   <Input
                     type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className={`w-full border-2 ${errors.firstName ? "border-red-500" : "border-slate-200"}`}
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className={`w-full border-2 ${errors.postalCode ? "border-red-500" : "border-slate-200"}`}
                     disabled={isLoading}
                   />
-                  {errors.firstName && <p className="text-red-600 text-sm mt-1">{errors.firstName}</p>}
+                  {errors.postalCode && <p className="text-red-600 text-sm mt-1">{errors.postalCode}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-900 mb-2">Last Name</label>
-                  <Input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className={`w-full border-2 ${errors.lastName ? "border-red-500" : "border-slate-200"}`}
+
+                <div className="flex gap-4 pt-6">
+                  <Button
+                    type="button"
+                    onClick={() => (window.location.href = "/cart")}
+                    className="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-900 font-semibold"
                     disabled={isLoading}
-                  />
-                  {errors.lastName && <p className="text-red-600 text-sm mt-1">{errors.lastName}</p>}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Continue"}
+                  </Button>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Postal Code</label>
-                <Input
-                  type="text"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  className={`w-full border-2 ${errors.postalCode ? "border-red-500" : "border-slate-200"}`}
-                  disabled={isLoading}
-                />
-                {errors.postalCode && <p className="text-red-600 text-sm mt-1">{errors.postalCode}</p>}
-              </div>
-
-              <div className="flex gap-4 pt-6">
-                <Button
-                  type="button"
-                  onClick={() => (window.location.href = "/cart")}
-                  className="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-900 font-semibold"
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : "Continue"}
-                </Button>
-              </div>
-            </form>
+              </form>
+            )}
           </div>
 
           <div className="bg-white rounded-lg p-6 h-fit">
