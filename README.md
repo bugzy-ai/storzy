@@ -11,8 +11,8 @@ A Next.js 16 e-commerce demo application built with React 19, shadcn/ui, and Tai
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd demo-test-app
+   git clone git@github.com:bugzy-ai/storzy.git
+   cd storzy
    ```
 
 2. Install dependencies:
