@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+When planning implementation work that may depend on product, process, architecture, or operational documentation from Confluence:
+
+1. Check `docs/confluence/index.json` first.
+2. If `lastSyncedAt` is stale for the task context, run `pnpm confluence:index`.
+3. Run `pnpm confluence:search -- "<topic>"` to identify relevant pages.
+4. Run `pnpm confluence:get -- <pageId|url>` for the top relevant pages.
+5. Use the markdown files written under `tmp/` as the source for detailed page content.
+
+Prefer this workflow before finalizing plans that rely on non-code project context.

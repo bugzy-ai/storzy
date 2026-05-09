@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "confluence:get": "tsx scripts/confluence-docs.ts get",
+    "confluence:index": "tsx scripts/confluence-docs.ts index",
+    "confluence:search": "tsx scripts/confluence-docs.ts search",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start"
@@ -43,6 +46,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dotenv": "^17.4.2",
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
@@ -57,6 +61,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "turndown": "^7.2.4",
     "vaul": "^1.1.2",
     "zod": "3.25.76"
   },
@@ -65,8 +70,10 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/turndown": "^5.0.6",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
+    "tsx": "^4.21.0",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
   }

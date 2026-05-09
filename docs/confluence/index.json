@@ -1,0 +1,74 @@
+{
+  "lastSyncedAt": "2026-05-09T09:04:27.335Z",
+  "baseUrl": "https://milkoslavov.atlassian.net",
+  "cql": "type=page order by lastmodified desc",
+  "pageCount": 6,
+  "pages": [
+    {
+      "id": "163941",
+      "title": "Getting started in Confluence from Jira",
+      "url": "https://milkoslavov.atlassian.net/spaces/~70121b861398bd2a64141948d86982124bc40/pages/163941/Getting+started+in+Confluence+from+Jira",
+      "status": "current",
+      "spaceId": "163842",
+      "spaceKey": "~70121b861398bd2a64141948d86982124bc40",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:00.715Z",
+      "excerpt": "Welcome to Confluence! There’s a lot that Confluence and Jira can do together—this page is a reference and resource for successfully incorporating both into your team’s workflow. Feel free to come back to it as often as you like. Confluence & Jira Together �� Display Jira work in Confluence View work across Atlassian by embedding Jira links directly into Co"
+    },
+    {
+      "id": "163939",
+      "title": "Overview",
+      "url": "https://milkoslavov.atlassian.net/spaces/~70121b861398bd2a64141948d86982124bc40/overview",
+      "status": "current",
+      "spaceId": "163842",
+      "spaceKey": "~70121b861398bd2a64141948d86982124bc40",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:00.346Z",
+      "excerpt": "Say hello to your colleagues who want to know your name, pronouns, role, team and location (or if you&#39;re remote). �� Recent content that I&#39;ve worked on �� Get in touch ✉️ �� �� �� End with a bang! Some options are: &quot;I am so grateful to be here at &lt;Insert company name&gt; and very excited to get started!&quot; or &quot;Looking forward to meeting all of you!&quot; or &quot;Can&#39;t wai"
+    },
+    {
+      "id": "196724",
+      "title": "Software Development",
+      "url": "https://milkoslavov.atlassian.net/spaces/SD/overview",
+      "status": "current",
+      "spaceId": "196612",
+      "spaceKey": "SD",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:06.277Z",
+      "excerpt": "Welcome to your software project space! We&#39;ve added some suggestions and placeholders. Everything is customizable. Get started with templates: Status Write an update Jira issues Recently updated To add the Recently updated element: When editing type / Find Recently updated in the dropdown Select Insert To edit the Recently updated element: Select the placeho"
+    },
+    {
+      "id": "196790",
+      "title": "Template - Decision documentation",
+      "url": "https://milkoslavov.atlassian.net/spaces/SD/pages/196790/Template+-+Decision+documentation",
+      "status": "current",
+      "spaceId": "196612",
+      "spaceKey": "SD",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:06.179Z",
+      "excerpt": "Status Not started / In progress / Complete Impact High / Medium / Low Driver Approver Contributors Informed Due date Resources \\uD83D\\uDCD8 Background \\uD83D\\uDCDA Relevant data \\uD83C\\uDF08 Options considered Option 1 Option 2 Description Pros and cons :plus: :minus: :plus: :minus: Estimated cost Large Medium ✅ Action items \\uD83C\\uDF1F Outcome"
+    },
+    {
+      "id": "196777",
+      "title": "Template - Meeting notes",
+      "url": "https://milkoslavov.atlassian.net/spaces/SD/pages/196777/Template+-+Meeting+notes",
+      "status": "current",
+      "spaceId": "196612",
+      "spaceKey": "SD",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:06.085Z",
+      "excerpt": "\\uD83D\\uDDD3 Date \\uD83D\\uDC65 Participants \\uD83E\\uDD45 Goals \\uD83C\\uDFA8 Brainstorm \\uD83D\\uDDE3 Discussion topics Time Topic Presenter Notes ✅ Action items ⤴ Decisions ��️ Related info"
+    },
+    {
+      "id": "196764",
+      "title": "Template - Product requirements",
+      "url": "https://milkoslavov.atlassian.net/spaces/SD/pages/196764/Template+-+Product+requirements",
+      "status": "current",
+      "spaceId": "196612",
+      "spaceKey": "SD",
+      "version": 1,
+      "updatedAt": "2026-05-09T08:40:05.984Z",
+      "excerpt": "Product overview ��️ Target date �� Document status DRAFT �� Team members Quick links �� Designs �� Loom demo ��️ Work tracker �� Objective \\uD83D\\uDCCA Success metrics Goal Metric \\uD83E\\uDD14 Assumptions \\uD83C\\uDF1F Milestones \\uD83D\\uDDD2 Requirements Requirement User Story Importance Jira Issue Notes HIGH :warning: Out of Scope \\uD"
+    }
+  ]
+}
