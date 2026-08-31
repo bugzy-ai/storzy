@@ -11,7 +11,7 @@ Storzy is a deterministic Next.js 16 e-commerce demo used by Felan evaluations.
   changes.
 - Package commands are `pnpm dev`, `pnpm build`, `pnpm typecheck`, `pnpm lint`,
   and `pnpm start`.
-- The benchmark runtime provides dependencies through the existing
-  `node_modules` link. `pnpm build` intentionally uses webpack because Next.js
-  Turbopack rejects dependency symlinks outside the workspace root. Do not
-  reinstall dependencies unless the task changes them.
+- Workspace setup installs dependencies from the committed lockfile before the
+  benchmark begins. `pnpm build` intentionally uses webpack for deterministic
+  verifier compatibility. Do not reinstall dependencies unless the task changes
+  them.
