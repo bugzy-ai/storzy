@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import ProductCard from "@/components/product-card"
 import Header from "@/components/header"
-import { PRODUCTS } from "@/lib/products"
+import type { Product } from "@/lib/products"
 
 type SortOption = "az" | "za" | "lohi" | "hilo"
 
 export default function InventoryPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null)
   const [cart, setCart] = useState<{ [key: number]: number }>({})
+  const [products, setProducts] = useState<Product[]>([])
   const [sortBy, setSortBy] = useState<SortOption>("az")
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
@@ -24,9 +25,18 @@ export default function InventoryPage() {
     if (savedCart) {
       setCart(JSON.parse(savedCart))
     }
+
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data.products))
   }, [])
 
   const handleAddToCart = (productId: number) => {
+    // Bug mode: silent failure - appears to work but doesn't add
+    if (process.env.NEXT_PUBLIC_ADD_TO_CART_BUG === 'true') {
+      return
+    }
+
     setCart((prev) => {
       const newCart = { ...prev, [productId]: (prev[productId] || 0) + 1 }
       localStorage.setItem("cart", JSON.stringify(newCart))
@@ -48,7 +58,7 @@ export default function InventoryPage() {
   }
 
   const getSortedProducts = () => {
-    const sorted = [...PRODUCTS]
+    const sorted = [...products]
     switch (sortBy) {
       case "az":
         return sorted.sort((a, b) => a.name.localeCompare(b.name))

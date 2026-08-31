@@ -38,7 +38,7 @@ export default function LoginPage() {
       newErrors.password = "Invalid password"
     }
 
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       setIsLoading(false)
