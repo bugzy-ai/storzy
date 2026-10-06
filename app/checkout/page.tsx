@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Header from "@/components/header"
 import { PRODUCTS } from "@/lib/products"
+import { completeCheckout } from "@/lib/submit-checkout"
 
 export default function CheckoutPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -15,6 +16,7 @@ export default function CheckoutPage() {
   const [lastName, setLastName] = useState("")
   const [postalCode, setPostalCode] = useState("")
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [checkoutError, setCheckoutError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [country, setCountry] = useState("")
   const [shippingMethod, setShippingMethod] = useState("")
@@ -37,6 +39,7 @@ export default function CheckoutPage() {
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
+    setCheckoutError("")
     const newErrors: { [key: string]: string } = {}
 
     if (!firstName) newErrors.firstName = "First Name is required"
@@ -54,11 +57,24 @@ export default function CheckoutPage() {
     }
 
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const items = Object.entries(cart).map(([productId, quantity]) => ({
+      productId: Number.parseInt(productId, 10),
+      quantity,
+    }))
+    const succeeded = await completeCheckout(items, {
+      submit: (checkoutItems) => fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: checkoutItems }),
+      }),
+      clearCart: () => localStorage.removeItem("cart"),
+      navigateToCompletion: () => { window.location.href = "/checkout-complete" },
+    })
 
-    // Complete checkout
-    localStorage.removeItem("cart")
-    window.location.href = "/checkout-complete"
+    if (!succeeded) {
+      setIsLoading(false)
+      setCheckoutError("Checkout could not be completed. Please try again.")
+    }
   }
 
   const cartItems = Object.entries(cart)
@@ -82,6 +98,7 @@ export default function CheckoutPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 bg-white rounded-lg p-8">
+            {checkoutError && <p role="alert" className="mb-6 text-red-600">{checkoutError}</p>}
             {isImprovedCheckout ? (
               <form onSubmit={handleCheckout} className="checkout-form-v2 flex flex-col gap-8">
                 <div className="checkout-fields-grid grid md:grid-cols-3 gap-6">
