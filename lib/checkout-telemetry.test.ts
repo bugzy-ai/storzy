@@ -20,6 +20,7 @@ describe("checkout telemetry", () => {
       status: 500,
       durationMs: 12.7,
       outcome: "internal_error",
+      providerVersion: "v1",
       requestId: "generated-id",
       firstName: "Sensitive Name",
       username: "private-user",
@@ -65,6 +66,7 @@ describe("checkout telemetry", () => {
       status: 200,
       durationMs: 4,
       outcome: "success",
+      providerVersion: "v1",
       requestId: "test-id",
     })).not.toThrow()
     await expect(flushCheckoutLogs()).resolves.toBeUndefined()

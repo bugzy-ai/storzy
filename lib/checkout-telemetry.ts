@@ -2,17 +2,19 @@ import { logs, SeverityNumber } from "@opentelemetry/api-logs"
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http"
 import { resourceFromAttributes } from "@opentelemetry/resources"
 import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs"
+import type { CheckoutProviderVersion } from "./checkout-provider"
 
 const SERVICE_NAME = "storzy"
 const CHECKOUT_ROUTE = "/api/checkout"
 const CHECKOUT_METHOD = "POST"
 
-export type CheckoutOutcome = "success" | "invalid_request" | "internal_error"
+export type CheckoutOutcome = "success" | "invalid_request" | "payment_provider_timeout" | "internal_error"
 
 export interface CheckoutLogInput {
   status: number
   durationMs: number
   outcome: CheckoutOutcome
+  providerVersion: CheckoutProviderVersion
   requestId: string
 }
 
@@ -37,7 +39,7 @@ export function buildCheckoutLogAttributes(input: CheckoutLogInput) {
     status: input.status,
     duration_ms: Math.max(0, Math.round(input.durationMs)),
     outcome: input.outcome,
-    provider_version: "v1",
+    provider_version: input.providerVersion,
     request_id: input.requestId,
   }
   const releaseSha = optionalEnvironmentValue("VERCEL_GIT_COMMIT_SHA")

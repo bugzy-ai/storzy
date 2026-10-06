@@ -51,7 +51,7 @@ describe("checkout API unexpected failures", () => {
       outcome: "internal_error",
     }))
     const logInput = mocks.emitCheckoutLog.mock.calls[0][0]
-    expect(Object.keys(logInput)).toEqual(["status", "durationMs", "outcome", "requestId"])
+    expect(Object.keys(logInput)).toEqual(["status", "durationMs", "outcome", "providerVersion", "requestId"])
     expect(JSON.stringify(logInput)).not.toContain("secret")
   })
 })

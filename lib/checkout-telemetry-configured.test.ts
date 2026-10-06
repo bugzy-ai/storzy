@@ -75,6 +75,7 @@ describe("configured PostHog Logs delivery", () => {
       status: 200,
       durationMs: 17,
       outcome: "success",
+      providerVersion: "v1",
       requestId: "generated-correlation-id",
     })
     await telemetry.flushCheckoutLogs()
@@ -116,6 +117,7 @@ describe("configured PostHog Logs delivery", () => {
       status: 500,
       durationMs: 2,
       outcome: "internal_error",
+      providerVersion: "v1",
       requestId: "generated-correlation-id",
     })).not.toThrow()
 
