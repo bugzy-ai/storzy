@@ -16,10 +16,9 @@ export default function CheckoutCompletePage() {
     setCurrentUser(user)
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser")
+  const handleBackToInventory = () => {
     localStorage.removeItem("cart")
-    window.location.href = "/"
+    window.location.href = "/inventory"
   }
 
   return (
@@ -31,8 +30,8 @@ export default function CheckoutCompletePage() {
           <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
           <h2 className="text-3xl font-bold text-slate-900 mb-2">Thank You For Your Order</h2>
           <p className="text-slate-600 mb-8">Your order has been completed successfully.</p>
-          <Button onClick={handleLogout} className="bg-primary hover:bg-primary/90 text-white font-semibold">
-            Back Home
+          <Button onClick={handleBackToInventory} className="bg-primary hover:bg-primary/90 text-white font-semibold">
+            Back to Inventory
           </Button>
         </div>
       </main>
