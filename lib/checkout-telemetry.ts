@@ -1,4 +1,4 @@
-import { logs, SeverityNumber } from "@opentelemetry/api-logs"
+import { SeverityNumber } from "@opentelemetry/api-logs"
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http"
 import { resourceFromAttributes } from "@opentelemetry/resources"
 import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs"
@@ -51,7 +51,7 @@ export function buildCheckoutLogAttributes(input: CheckoutLogInput) {
   return attributes
 }
 
-export function initializeCheckoutTelemetry() {
+function initializeCheckoutTelemetry() {
   if (initialized) return
   initialized = true
 
@@ -73,7 +73,6 @@ export function initializeCheckoutTelemetry() {
       processors: [processor],
     })
 
-    logs.setGlobalLoggerProvider(provider)
     loggerProvider = provider
   } catch {
     loggerProvider = undefined
@@ -81,6 +80,7 @@ export function initializeCheckoutTelemetry() {
 }
 
 export function emitCheckoutLog(input: CheckoutLogInput) {
+  initializeCheckoutTelemetry()
   if (!loggerProvider) return
 
   const severityNumber = input.status >= 500
@@ -90,7 +90,7 @@ export function emitCheckoutLog(input: CheckoutLogInput) {
       : SeverityNumber.INFO
 
   try {
-    logs.getLogger("storzy.checkout").emit({
+    loggerProvider.getLogger("storzy.checkout").emit({
       severityNumber,
       severityText: input.status >= 500 ? "ERROR" : input.status >= 400 ? "WARN" : "INFO",
       body: `checkout.${input.outcome}`,

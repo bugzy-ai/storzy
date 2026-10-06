@@ -3,7 +3,6 @@ import {
   buildCheckoutLogAttributes,
   emitCheckoutLog,
   flushCheckoutLogs,
-  initializeCheckoutTelemetry,
 } from "./checkout-telemetry"
 import type { CheckoutLogInput } from "./checkout-telemetry"
 
@@ -61,7 +60,6 @@ describe("checkout telemetry", () => {
     vi.stubEnv("POSTHOG_PROJECT_TOKEN", "")
     vi.stubEnv("POSTHOG_LOGS_ENDPOINT", "")
     const fetchSpy = vi.spyOn(globalThis, "fetch")
-    initializeCheckoutTelemetry()
     expect(() => emitCheckoutLog({
       status: 200,
       durationMs: 4,

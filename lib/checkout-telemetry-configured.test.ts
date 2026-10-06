@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => {
     emittedRecord: undefined as unknown,
     forceFlush: vi.fn(async () => {}),
   }
+  const emit = vi.fn((record: unknown) => { state.emittedRecord = record })
+  const getLogger = vi.fn((_name: string) => ({ emit }))
 
   class MockExporter {
     constructor(options: unknown) {
@@ -29,6 +31,10 @@ const mocks = vi.hoisted(() => {
     forceFlush() {
       return state.forceFlush()
     }
+
+    getLogger(name: string) {
+      return getLogger(name)
+    }
   }
 
   return {
@@ -36,16 +42,12 @@ const mocks = vi.hoisted(() => {
     MockExporter,
     MockProcessor,
     MockLoggerProvider,
-    setGlobalLoggerProvider: vi.fn(),
-    emit: vi.fn((record: unknown) => { state.emittedRecord = record }),
+    getLogger,
+    emit,
   }
 })
 
 vi.mock("@opentelemetry/api-logs", () => ({
-  logs: {
-    setGlobalLoggerProvider: mocks.setGlobalLoggerProvider,
-    getLogger: vi.fn(() => ({ emit: mocks.emit })),
-  },
   SeverityNumber: { INFO: 9, WARN: 13, ERROR: 17 },
 }))
 vi.mock("@opentelemetry/exporter-logs-otlp-http", () => ({ OTLPLogExporter: mocks.MockExporter }))
@@ -63,14 +65,13 @@ afterEach(() => {
 })
 
 describe("configured PostHog Logs delivery", () => {
-  it("sets Bearer auth, emits sanitized records, and flushes", async () => {
+  it("lazily initializes its local provider, emits sanitized records, and flushes", async () => {
     vi.stubEnv("POSTHOG_PROJECT_TOKEN", "test-project-token")
     vi.stubEnv("POSTHOG_LOGS_ENDPOINT", "https://eu.i.posthog.com/i/v1/logs")
     vi.stubEnv("VERCEL_ENV", "preview")
     vi.stubEnv("VERCEL_GIT_COMMIT_SHA", "release-sha")
 
     const telemetry = await import("./checkout-telemetry")
-    telemetry.initializeCheckoutTelemetry()
     telemetry.emitCheckoutLog({
       status: 200,
       durationMs: 17,
@@ -85,7 +86,6 @@ describe("configured PostHog Logs delivery", () => {
       headers: { Authorization: "Bearer test-project-token" },
     })
     expect(mocks.state.processorOptions).toEqual({ exporter: expect.any(mocks.MockExporter) })
-    expect(mocks.setGlobalLoggerProvider).toHaveBeenCalledOnce()
     expect(mocks.state.providerOptions).toMatchObject({
       resource: {
         "service.name": "storzy",
@@ -93,6 +93,7 @@ describe("configured PostHog Logs delivery", () => {
       },
       processors: [expect.any(mocks.MockProcessor)],
     })
+    expect(mocks.getLogger).toHaveBeenCalledWith("storzy.checkout")
     expect(mocks.state.emittedRecord).toEqual({
       severityNumber: 9,
       severityText: "INFO",
