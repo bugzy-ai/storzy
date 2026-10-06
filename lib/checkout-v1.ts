@@ -10,7 +10,12 @@ export type CheckoutValidation =
   | { ok: false }
 
 export function validateCheckoutRequest(value: unknown): CheckoutValidation {
-  if (typeof value !== "object" || value === null || !Array.isArray((value as { items?: unknown }).items)) {
+  if (
+    typeof value !== "object" || value === null ||
+    !Object.prototype.hasOwnProperty.call(value, "items") ||
+    Object.keys(value).length !== 1 ||
+    !Array.isArray((value as { items?: unknown }).items)
+  ) {
     return { ok: false }
   }
 
@@ -20,7 +25,14 @@ export function validateCheckoutRequest(value: unknown): CheckoutValidation {
   const productIds = new Set(PRODUCTS.map(({ id }) => id))
   const validItems: CheckoutItem[] = []
   for (const item of items) {
-    if (typeof item !== "object" || item === null) return { ok: false }
+    if (
+      typeof item !== "object" || item === null ||
+      Object.keys(item).length !== 2 ||
+      !Object.prototype.hasOwnProperty.call(item, "productId") ||
+      !Object.prototype.hasOwnProperty.call(item, "quantity")
+    ) {
+      return { ok: false }
+    }
     const { productId, quantity } = item as { productId?: unknown; quantity?: unknown }
     if (
       typeof productId !== "number" || !Number.isSafeInteger(productId) || !productIds.has(productId) ||

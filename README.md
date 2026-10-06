@@ -54,6 +54,19 @@ POSTHOG_LOGS_ENDPOINT=https://eu.i.posthog.com/i/v1/logs
 
 PostHog Logs are optional and remain disabled unless both server-side variables are set. Configure the project token only in a trusted server environment; do not use a `NEXT_PUBLIC_` prefix. Checkout logs contain only the documented operational fields and do not include checkout form data or cart contents. The service uses `VERCEL_ENV` (falling back to `NODE_ENV`) for its environment and includes `VERCEL_GIT_COMMIT_SHA` as the release SHA when available. Log export is flushed before the checkout API response completes. The V1 checkout endpoint is a healthy demo simulation; it does not charge a payment method or persist orders.
 
+## Demo Checkout
+
+Checkout uses a simulated card form and never processes a real payment. **Do not enter real card information.** Use these harmless demo values:
+
+```text
+Cardholder: Demo Shopper
+Card number: 4111 1111 1111 1111
+Expiration: 12/34
+Security code: 123
+```
+
+Shipping and card fields stay in browser component memory and are not included in the checkout API request. The server receives only product IDs and quantities.
+
 ## Running Locally
 
 ```bash

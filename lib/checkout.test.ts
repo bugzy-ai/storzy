@@ -54,6 +54,19 @@ describe("checkout API", () => {
     }))
     expect(telemetry.flushCheckoutLogs).toHaveBeenCalledTimes(2)
   })
+
+  it("rejects checkout form values at the API boundary", async () => {
+    const response = await POST(new Request("http://localhost/api/checkout", {
+      method: "POST",
+      body: JSON.stringify({
+        items: [{ productId: 1, quantity: 1 }],
+        cardNumber: "4111 1111 1111 1111",
+      }),
+    }))
+
+    expect(response.status).toBe(400)
+    expect(await response.text()).not.toContain("4111 1111 1111 1111")
+  })
 })
 
 describe("checkout UI submission effects", () => {
