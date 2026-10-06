@@ -226,6 +226,7 @@ export default function CheckoutPage() {
                     <option value="uk">United Kingdom</option>
                     <option value="de">Germany</option>
                     <option value="fr">France</option>
+                    <option value="bg">Bulgaria</option>
                   </select>
                   {errors.country && <p className="text-red-600 text-sm mt-1">{errors.country}</p>}
                 </div>
