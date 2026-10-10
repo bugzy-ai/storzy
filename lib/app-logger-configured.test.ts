@@ -71,15 +71,17 @@ describe("configured PostHog Logs delivery", () => {
     vi.stubEnv("VERCEL_ENV", "preview")
     vi.stubEnv("VERCEL_GIT_COMMIT_SHA", "release-sha")
 
-    const telemetry = await import("./checkout-telemetry")
-    telemetry.emitCheckoutLog({
+    const telemetry = await import("./app-logger")
+    telemetry.emitOperationalLog({
+      eventName: "authentication.completed",
+      route: "/api/login",
+      method: "POST",
       status: 200,
       durationMs: 17,
       outcome: "success",
-      providerVersion: "v1",
       requestId: "generated-correlation-id",
     })
-    await telemetry.flushCheckoutLogs()
+    await telemetry.flushOperationalLogs()
 
     expect(mocks.state.exporterOptions).toEqual({
       url: "https://eu.i.posthog.com/i/v1/logs",
@@ -93,36 +95,68 @@ describe("configured PostHog Logs delivery", () => {
       },
       processors: [expect.any(mocks.MockProcessor)],
     })
-    expect(mocks.getLogger).toHaveBeenCalledWith("storzy.checkout")
+    expect(mocks.getLogger).toHaveBeenCalledWith("storzy.server")
     expect(mocks.state.emittedRecord).toEqual({
       severityNumber: 9,
       severityText: "INFO",
-      body: "checkout.success",
+      body: "authentication.completed",
       attributes: {
         service: "storzy",
+        event_name: "authentication.completed",
         environment: "preview",
-        route: "/api/checkout",
+        route: "/api/login",
         method: "POST",
         status: 200,
         duration_ms: 17,
         outcome: "success",
-        provider_version: "v1",
         request_id: "generated-correlation-id",
         release_sha: "release-sha",
       },
     })
     expect(mocks.state.forceFlush).toHaveBeenCalledOnce()
 
+    telemetry.emitOperationalLog({
+      eventName: "authentication.completed",
+      route: "/api/login",
+      method: "POST",
+      status: 401,
+      durationMs: 3,
+      outcome: "invalid_credentials",
+      requestId: "rejected-request",
+    })
+    expect(mocks.state.emittedRecord).toEqual(expect.objectContaining({
+      severityNumber: 13,
+      severityText: "WARN",
+    }))
+
+    telemetry.emitOperationalLog({
+      eventName: "authentication.completed",
+      route: "/api/login",
+      method: "POST",
+      status: 500,
+      durationMs: 3,
+      outcome: "internal_error",
+      errorType: "INTERNAL_ERROR",
+      requestId: "failed-request",
+    })
+    expect(mocks.state.emittedRecord).toEqual(expect.objectContaining({
+      severityNumber: 17,
+      severityText: "ERROR",
+    }))
+
     mocks.emit.mockImplementationOnce(() => { throw new Error("telemetry exporter failure") })
-    expect(() => telemetry.emitCheckoutLog({
+    expect(() => telemetry.emitOperationalLog({
+      eventName: "authentication.completed",
+      route: "/api/login",
+      method: "POST",
       status: 500,
       durationMs: 2,
       outcome: "internal_error",
-      providerVersion: "v1",
+      errorType: "INTERNAL_ERROR",
       requestId: "generated-correlation-id",
     })).not.toThrow()
 
     mocks.state.forceFlush.mockRejectedValueOnce(new Error("flush failure"))
-    await expect(telemetry.flushCheckoutLogs()).resolves.toBeUndefined()
+    await expect(telemetry.flushOperationalLogs()).resolves.toBeUndefined()
   })
 })

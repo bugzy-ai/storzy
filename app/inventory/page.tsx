@@ -3,20 +3,42 @@
 import { useState, useEffect } from "react"
 import ProductCard from "@/components/product-card"
 import Header from "@/components/header"
-import { PRODUCTS } from "@/lib/products"
+import { Button } from "@/components/ui/button"
+import { parseCatalogResponse } from "@/lib/catalog"
+import type { Product } from "@/lib/products"
 
 type SortOption = "az" | "za" | "lohi" | "hilo"
 
 export default function InventoryPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null)
   const [cart, setCart] = useState<{ [key: number]: number }>({})
+  const [products, setProducts] = useState<Product[]>([])
+  const [catalogError, setCatalogError] = useState("")
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("az")
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
+
+  const loadProducts = async () => {
+    setCatalogError("")
+    setIsCatalogLoading(true)
+    try {
+      const response = await fetch("/api/products")
+      const body: unknown = await response.json()
+      const catalog = parseCatalogResponse(body)
+      if (!response.ok || !catalog) throw new Error("Invalid catalog response")
+      setProducts(catalog)
+    } catch {
+      setProducts([])
+      setCatalogError("Products could not be loaded. Please try again.")
+    } finally {
+      setIsCatalogLoading(false)
+    }
+  }
 
   useEffect(() => {
     const user = localStorage.getItem("currentUser")
     if (!user) {
       window.location.href = "/"
+      return
     }
     setCurrentUser(user)
 
@@ -24,6 +46,8 @@ export default function InventoryPage() {
     if (savedCart) {
       setCart(JSON.parse(savedCart))
     }
+
+    void loadProducts()
   }, [])
 
   const handleAddToCart = (productId: number) => {
@@ -53,7 +77,7 @@ export default function InventoryPage() {
   }
 
   const getSortedProducts = () => {
-    const sorted = [...PRODUCTS]
+    const sorted = [...products]
     switch (sortBy) {
       case "az":
         return sorted.sort((a, b) => a.name.localeCompare(b.name))
@@ -92,17 +116,28 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {getSortedProducts().map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              quantity={cart[product.id] || 0}
-              onAddToCart={() => handleAddToCart(product.id)}
-              onRemoveFromCart={() => handleRemoveFromCart(product.id)}
-            />
-          ))}
-        </div>
+        {isCatalogLoading ? (
+          <p className="text-slate-600">Loading products...</p>
+        ) : catalogError ? (
+          <div className="rounded-lg bg-white p-8 text-center">
+            <p role="alert" className="text-red-600">{catalogError}</p>
+            <Button onClick={() => void loadProducts()} className="mt-4 bg-primary text-white">
+              Try Again
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getSortedProducts().map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                quantity={cart[product.id] || 0}
+                onAddToCart={() => handleAddToCart(product.id)}
+                onRemoveFromCart={() => handleRemoveFromCart(product.id)}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   )

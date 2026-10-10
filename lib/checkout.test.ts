@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const telemetry = vi.hoisted(() => ({
-  emitCheckoutLog: vi.fn(),
-  flushCheckoutLogs: vi.fn(async () => {}),
+  emitOperationalLog: vi.fn(),
+  flushOperationalLogs: vi.fn(async () => {}),
 }))
 
-vi.mock("@/lib/checkout-telemetry", () => telemetry)
+vi.mock("@/lib/app-logger", () => telemetry)
 
 import { POST } from "@/app/api/checkout/route"
 import { completeCheckout } from "./submit-checkout"
@@ -26,12 +26,19 @@ describe("checkout API", () => {
     const body = await response.json()
     expect(body).toEqual({ ok: true, requestId: response.headers.get("x-request-id") })
     expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/i)
-    expect(telemetry.emitCheckoutLog).toHaveBeenCalledWith(expect.objectContaining({
+    expect(telemetry.emitOperationalLog).toHaveBeenCalledWith(expect.objectContaining({
+      eventName: "payment.authorization.completed",
       status: 200,
       outcome: "success",
       requestId: body.requestId,
     }))
-    expect(telemetry.flushCheckoutLogs).toHaveBeenCalledOnce()
+    expect(telemetry.emitOperationalLog).toHaveBeenCalledWith(expect.objectContaining({
+      eventName: "checkout.request.completed",
+      status: 200,
+      outcome: "success",
+      requestId: body.requestId,
+    }))
+    expect(telemetry.flushOperationalLogs).toHaveBeenCalledOnce()
   })
 
   it("rejects malformed and invalid input with sanitized errors and telemetry", async () => {
@@ -48,11 +55,12 @@ describe("checkout API", () => {
     }))
     expect(invalid.status).toBe(400)
     expect(await invalid.text()).not.toContain("Sensitive Name")
-    expect(telemetry.emitCheckoutLog).toHaveBeenLastCalledWith(expect.objectContaining({
+    expect(telemetry.emitOperationalLog).toHaveBeenLastCalledWith(expect.objectContaining({
+      eventName: "checkout.request.completed",
       status: 400,
       outcome: "invalid_request",
     }))
-    expect(telemetry.flushCheckoutLogs).toHaveBeenCalledTimes(2)
+    expect(telemetry.flushOperationalLogs).toHaveBeenCalledTimes(2)
   })
 
   it("rejects checkout form values at the API boundary", async () => {

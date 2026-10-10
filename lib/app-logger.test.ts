@@ -1,24 +1,27 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
-  buildCheckoutLogAttributes,
-  emitCheckoutLog,
-  flushCheckoutLogs,
-} from "./checkout-telemetry"
-import type { CheckoutLogInput } from "./checkout-telemetry"
+  buildOperationalLogAttributes,
+  emitOperationalLog,
+  flushOperationalLogs,
+} from "./app-logger"
+import type { OperationalLogInput } from "./app-logger"
 
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.restoreAllMocks()
 })
 
-describe("checkout telemetry", () => {
+describe("operational logging", () => {
   it("creates a strict sanitized attribute allowlist", () => {
     vi.stubEnv("VERCEL_ENV", "preview")
     vi.stubEnv("VERCEL_GIT_COMMIT_SHA", "abc123")
-    const attributes = buildCheckoutLogAttributes({
-      status: 500,
+    const attributes = buildOperationalLogAttributes({
+      eventName: "checkout.request.completed",
+      route: "/api/checkout",
+      method: "POST",
+      status: 200,
       durationMs: 12.7,
-      outcome: "internal_error",
+      outcome: "success",
       providerVersion: "v1",
       requestId: "generated-id",
       firstName: "Sensitive Name",
@@ -27,16 +30,17 @@ describe("checkout telemetry", () => {
       rawCart: [{ productName: "Secret Product" }],
       providerPayload: "raw provider data",
       token: "secret-token",
-    } as CheckoutLogInput & Record<string, unknown>)
+    } as OperationalLogInput & Record<string, unknown>)
 
     expect(attributes).toEqual({
       service: "storzy",
       environment: "preview",
       route: "/api/checkout",
       method: "POST",
-      status: 500,
+      event_name: "checkout.request.completed",
+      status: 200,
       duration_ms: 13,
-      outcome: "internal_error",
+      outcome: "success",
       provider_version: "v1",
       request_id: "generated-id",
       release_sha: "abc123",
@@ -44,15 +48,16 @@ describe("checkout telemetry", () => {
     expect(JSON.stringify(attributes)).not.toMatch(/Sensitive|password|token|cart|product name/i)
     expect(Object.keys(attributes)).toEqual([
       "service",
+      "event_name",
       "environment",
       "route",
       "method",
       "status",
       "duration_ms",
       "outcome",
-      "provider_version",
       "request_id",
       "release_sha",
+      "provider_version",
     ])
   })
 
@@ -60,14 +65,16 @@ describe("checkout telemetry", () => {
     vi.stubEnv("POSTHOG_PROJECT_TOKEN", "")
     vi.stubEnv("POSTHOG_LOGS_ENDPOINT", "")
     const fetchSpy = vi.spyOn(globalThis, "fetch")
-    expect(() => emitCheckoutLog({
+    expect(() => emitOperationalLog({
+      eventName: "authentication.completed",
+      route: "/api/login",
+      method: "POST",
       status: 200,
       durationMs: 4,
       outcome: "success",
-      providerVersion: "v1",
       requestId: "test-id",
     })).not.toThrow()
-    await expect(flushCheckoutLogs()).resolves.toBeUndefined()
+    await expect(flushOperationalLogs()).resolves.toBeUndefined()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

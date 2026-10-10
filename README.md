@@ -52,7 +52,18 @@ POSTHOG_LOGS_ENDPOINT=https://eu.i.posthog.com/i/v1/logs
 
 `CHECKOUT_PROVIDER_V2` is server-only. Missing values and every value other than exact `true` use the healthy V1 provider. Activate V2 by setting it to `true` in the target server environment. Roll back to V1 by setting it to `false` or removing it, then redeploy or restart the application.
 
-PostHog Logs are optional and remain disabled unless both server-side variables are set. Configure the project token only in a trusted server environment; do not use a `NEXT_PUBLIC_` prefix. Checkout logs contain only the documented operational fields and do not include checkout form data or cart contents. The service uses `VERCEL_ENV` (falling back to `NODE_ENV`) for its environment and includes `VERCEL_GIT_COMMIT_SHA` as the release SHA when available. Log export is flushed before the checkout API response completes. The V1 checkout endpoint is a healthy demo simulation; it does not charge a payment method or persist orders.
+PostHog Logs are optional and remain disabled unless both server-side variables are set. Configure the project token only in a trusted server environment; do not use a `NEXT_PUBLIC_` prefix. The service uses `VERCEL_ENV` (falling back to `NODE_ENV`) for its environment and includes `VERCEL_GIT_COMMIT_SHA` as the release SHA when available. Log export is flushed before each instrumented API request completes. The V1 checkout endpoint is a healthy demo simulation; it does not charge a payment method or persist orders.
+
+### Operational event catalog
+
+| Event | Operational purpose | Safe domain metadata |
+|---|---|---|
+| `authentication.completed` | Login success, rejection, and server reliability | Outcome and HTTP status |
+| `catalog.retrieval.completed` | Catalog availability and returned inventory size | Outcome and item count |
+| `checkout.request.completed` | End-to-end checkout status and latency | Outcome and provider version |
+| `payment.authorization.completed` | Payment dependency result and latency | Outcome, provider version, stable error type |
+
+Every event includes the service/environment resource context plus route, method, status, duration, request ID, outcome, and release SHA when available. Successful completions are `INFO`, rejected or invalid requests are `WARN`, and dependency/internal failures are `ERROR`. Logs never include usernames, passwords, shipping/card fields, product names, raw cart contents, secrets, raw provider payloads, or raw errors.
 
 ## Demo Checkout
 

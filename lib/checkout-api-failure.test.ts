@@ -2,17 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(() => ({
   processCheckoutV1: vi.fn(),
-  emitCheckoutLog: vi.fn(),
-  flushCheckoutLogs: vi.fn(async () => {}),
+  emitOperationalLog: vi.fn(),
+  flushOperationalLogs: vi.fn(async () => {}),
 }))
 
 vi.mock("@/lib/checkout-v1", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./checkout-v1")>()
   return { ...actual, processCheckoutV1: mocks.processCheckoutV1 }
 })
-vi.mock("@/lib/checkout-telemetry", () => ({
-  emitCheckoutLog: mocks.emitCheckoutLog,
-  flushCheckoutLogs: mocks.flushCheckoutLogs,
+vi.mock("@/lib/app-logger", () => ({
+  emitOperationalLog: mocks.emitOperationalLog,
+  flushOperationalLogs: mocks.flushOperationalLogs,
 }))
 
 import { POST } from "@/app/api/checkout/route"
@@ -23,7 +23,7 @@ describe("checkout API unexpected failures", () => {
   it("returns a safe error and awaits telemetry flush", async () => {
     mocks.processCheckoutV1.mockRejectedValueOnce(new Error("raw provider payload and secret"))
     let finishFlush!: () => void
-    mocks.flushCheckoutLogs.mockImplementationOnce(() => new Promise<void>((resolve) => {
+    mocks.flushOperationalLogs.mockImplementationOnce(() => new Promise<void>((resolve) => {
       finishFlush = resolve
     }))
 
@@ -46,12 +46,18 @@ describe("checkout API unexpected failures", () => {
     expect(responseText).toContain("Checkout could not be completed")
     expect(responseText).not.toContain("raw provider payload")
     expect(responseText).not.toContain("secret")
-    expect(mocks.emitCheckoutLog).toHaveBeenCalledWith(expect.objectContaining({
+    expect(mocks.emitOperationalLog).toHaveBeenCalledWith(expect.objectContaining({
+      eventName: "payment.authorization.completed",
+      status: 500,
+      outcome: "provider_error",
+      errorType: "PAYMENT_PROVIDER_ERROR",
+    }))
+    expect(mocks.emitOperationalLog).toHaveBeenCalledWith(expect.objectContaining({
+      eventName: "checkout.request.completed",
       status: 500,
       outcome: "internal_error",
     }))
-    const logInput = mocks.emitCheckoutLog.mock.calls[0][0]
-    expect(Object.keys(logInput)).toEqual(["status", "durationMs", "outcome", "providerVersion", "requestId"])
-    expect(JSON.stringify(logInput)).not.toContain("secret")
+    expect(JSON.stringify(mocks.emitOperationalLog.mock.calls)).not.toContain("secret")
+    expect(JSON.stringify(mocks.emitOperationalLog.mock.calls)).not.toContain("raw provider payload")
   })
 })

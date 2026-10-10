@@ -7,47 +7,54 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AlertCircle } from "lucide-react"
 
-const VALID_USERS = ["test_user"]
-const VALID_PASSWORD = "password"
-
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ username?: string; password?: string; form?: string }>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
-    setIsLoading(true)
-
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     const newErrors: typeof errors = {}
 
     if (!username) {
       newErrors.username = "Username is required"
-    } else if (!VALID_USERS.includes(username)) {
-      newErrors.username = "Invalid username"
     }
 
     if (!password) {
       newErrors.password = "Password is required"
-    } else if (password !== VALID_PASSWORD) {
-      newErrors.password = "Invalid password"
     }
 
-    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      setIsLoading(false)
       return
     }
 
-    // Successful login - redirect to products
-    localStorage.setItem("currentUser", username)
-    window.location.href = "/inventory"
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        setErrors({
+          form: response.status === 401
+            ? "Invalid username or password"
+            : "Login could not be completed. Please try again.",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      localStorage.setItem("currentUser", username)
+      window.location.href = "/inventory"
+    } catch {
+      setErrors({ form: "Login could not be completed. Please try again." })
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -87,8 +94,10 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {(errors.username || errors.password) && (
-              <div className="bg-red-600 text-white p-3 rounded text-sm">{errors.username || errors.password}</div>
+            {(errors.username || errors.password || errors.form) && (
+              <div className="bg-red-600 text-white p-3 rounded text-sm">
+                {errors.username || errors.password || errors.form}
+              </div>
             )}
 
             <Button
